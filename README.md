@@ -1,174 +1,185 @@
-<<<<<<< HEAD
 # PFA-NET
-=======
-<img src="docs/open_mmlab.png" align="right" width="30%">
 
-# OpenPCDet
+The code is mainly based on [OpenPCDet](https://github.com/open-mmlab/OpenPCDet).
 
-`OpenPCDet` is a clear, simple, self-contained open source project for LiDAR-based 3D object detection. 
-
-It is also the official code release of [`[PointRCNN]`](https://arxiv.org/abs/1812.04244), [`[Part-A^2 net]`](https://arxiv.org/abs/1907.03670) and [`[PV-RCNN]`](https://arxiv.org/abs/1912.13192). 
-
-
-## Overview
-- [Changelog](#changelog)
-- [Design Pattern](#openpcdet-design-pattern)
-- [Model Zoo](#model-zoo)
-- [Installation](docs/INSTALL.md)
-- [Quick Demo](docs/DEMO.md)
-- [Getting Started](docs/GETTING_STARTED.md)
-- [Citation](#citation)
-
-
-## Changelog
-[2020-08-10] **NEW:** Bugfixed: The provided NuScenes models have been updated to fix the loading bugs. Please redownload it if you need to use the pretrained NuScenes models.
-
-[2020-07-30] **NEW:** `OpenPCDet` v0.3.0 is released with the following features:
-   * The Point-based and Anchor-Free models ([`PointRCNN`](#KITTI-3D-Object-Detection-Baselines), [`PartA2-Free`](#KITTI-3D-Object-Detection-Baselines)) are supported now.
-   * The NuScenes dataset is supported with strong baseline results ([`SECOND-MultiHead (CBGS)`](#NuScenes-3D-Object-Detection-Baselines) and [`PointPillar-MultiHead`](#NuScenes-3D-Object-Detection-Baselines)).
-   * High efficiency than last version, support `PyTorch 1.1~1.5` and `spconv 1.0~1.2` simultaneously.
-   
-[2020-07-17]  Add simple visualization codes and a quick demo to test with custom data. 
-
-[2020-06-24] `OpenPCDet` v0.2.0 is released with pretty new structures to support more models and datasets. 
-
-[2020-03-16] `OpenPCDet` v0.1.0 is released. 
-
-
-## Introduction
-
-
-### What does `OpenPCDet` toolbox do?
-
-Note that we have upgrated `PCDet` from `v0.1` to `v0.2` with pretty new structures to support various datasets and models.
-
-`OpenPCDet` is a general PyTorch-based codebase for 3D object detection from point cloud. 
-It currently supports multiple state-of-the-art 3D object detection methods with highly refactored codes for both one-stage and two-stage 3D detection frameworks.
-
-Based on `OpenPCDet` toolbox, we win the Waymo Open Dataset challenge in [3D Detection](https://waymo.com/open/challenges/3d-detection/), 
-[3D Tracking](https://waymo.com/open/challenges/3d-tracking/), [Domain Adaptation](https://waymo.com/open/challenges/domain-adaptation/) 
-three tracks among all LiDAR-only methods, and the Waymo related models will be released to `OpenPCDet` soon.    
-
-We are actively updating this repo currently, and more datasets and models will be supported soon. 
-Contributions are also welcomed. 
-
-### `OpenPCDet` design pattern
-
-* Data-Model separation with unified point cloud coordinate for easily extending to custom datasets:
+## 项目用途
+3D object detection is a crucial problem in environmental perception for autonomous driving. Currently,
+most works focused on LiDAR, camera, or their fusion, while
+very few algorithms involve a RaDAR sensor, especially 4D
+RaDAR providing 3D position and velocity information. 4D
+RaDAR can work well in bad weather and has a higher
+performance than traditional 3D RaDAR, but it also contains
+lots of noise information and suffers measurement ambiguities.
+Existing 3D object detection methods can’t judge the heading
+of objects by focusing on local features in sparse point clouds.
+To better overcome this problem, we propose a new method
+named PFA-Net only using a 4D RaDAR, which utilizes a
+Self-Attention mechanism instead of PointNet to extract point
+clouds’ global features. These global features containing long distance information can effectively improve the network’s
+ability to regress the heading angle of objects and enhance
+detection accuracy. Our method’s performance is enhanced
+by 8.13% of 3D mAP and 5.52% of BEV mAP compared
+with the baseline. Extensive experiments show that PFA-Net
+surpasses state-of-the-art 3D detection methods on Astyx HiRes
+2019 dataset 
+* Model Framework:
 <p align="center">
-  <img src="docs/dataset_vs_model.png" width="95%" height="320">
+  <img src="docs/frame.png" width="95%">
 </p>
 
-* Unified 3D box definition: (x, y, z, dx, dy, dz, heading).
+## 项目数据集
+### 项目数据集简介
 
-* Flexible and clear model structure to easily support various 3D detection models: 
+ Astyx HiRes2019数据集是一个流行的汽车雷达数据集，用于基于深度学习的3D对象检测。开源该数据集的动机是为研究社区提供高分辨率的雷达数据，
+ 促进和激励使用雷达传感器数据的算法的研究。该数据集是以雷达为中心的自动数据集，基于雷达、激光雷达和摄像机数据，用于三维目标检测。
+ 数据集的大小超过350 MB，由546帧组成，包含大约3000个非常精确标记的三维对象注释。虽然大多数对象属于“汽车”类，但也提供了总共7个类别（公共汽车、汽车、自行车手、摩托车手、人、拖车、卡车）的少量地面真实数据。
 <p align="center">
-  <img src="docs/model_framework.png" width="95%">
+  <img src="docs/image.png" width="95%">
 </p>
 
-* Support various models within one framework as: 
-<p align="center">
-  <img src="docs/multiple_models_demo.png" width="95%">
-</p>
+### 项目数据集地址
+`/home/datasets_user/astyx`
+
+### 项目中数据集地址的引用
+
+tools\cfgs\dataset_configs\astyx_dataset.yaml line 2,12,26
+
+tools\cfgs\astyx_models\pointpillar.yaml line 30
 
 
-### Currently Supported Features
+## 安装信息
+### 环境
+- Python 3.8
+- PyTorch '1.10.2+cu113'
+- CUDA 11.3
+- GCC 7.5
+- pcdet '0.5.2+8c6e889'
 
-- [x] Support both one-stage and two-stage 3D object detection frameworks
-- [x] Support distributed training & testing with multiple GPUs and multiple machines
-- [x] Support multiple heads on different scales to detect different classes
-- [x] Support stacked version set abstraction to encode various number of points in different scenes
-- [x] Support Adaptive Training Sample Selection (ATSS) for target assignment
-- [x] Support RoI-aware point cloud pooling & RoI-grid point cloud pooling
-- [x] Support GPU version 3D IoU calculation and rotated NMS 
+### 安装步骤
 
-
-## Model Zoo
-
-### KITTI 3D Object Detection Baselines
-Selected supported methods are shown in the below table. The results are the 3D detection performance of moderate difficulty on the *val* set of KITTI dataset.
-* All models are trained with 8 GTX 1080Ti GPUs and are available for download. 
-* The training time is measured with 8 TITAN XP GPUs and PyTorch 1.5.
-
-|                                             | training time | Car | Pedestrian | Cyclist  | download | 
-|---------------------------------------------|----------:|:-------:|:-------:|:-------:|:---------:|
-| [PointPillar](tools/cfgs/kitti_models/pointpillar.yaml) |~1.2 hours| 77.28 | 52.29 | 62.68 | [model-18M](https://drive.google.com/file/d/1wMxWTpU1qUoY3DsCH31WJmvJxcjFXKlm/view?usp=sharing) | 
-| [SECOND](tools/cfgs/kitti_models/second.yaml)       |  ~1.7 hours  | 78.62 | 52.98 | 67.15 | [model-20M](https://drive.google.com/file/d/1-01zsPOsqanZQqIIyy7FpNXStL3y4jdR/view?usp=sharing) |
-| [PointRCNN](tools/cfgs/kitti_models/pointrcnn.yaml) | ~3 hours | 78.70 | 54.41 | 72.11 | [model-16M](https://drive.google.com/file/d/1BCX9wMn-GYAfSOPpyxf6Iv6fc0qKLSiU/view?usp=sharing)| 
-| [PointRCNN-IoU](tools/cfgs/kitti_models/pointrcnn_iou.yaml) | ~3 hours | 78.75 | 58.32 | 71.34 | [model-16M](https://drive.google.com/file/d/1V0vNZ3lAHpEEt0MlT80eL2f41K2tHm_D/view?usp=sharing)|
-| [Part-A^2-Free](tools/cfgs/kitti_models/PartA2_free.yaml)   | ~3.8 hours| 78.72 | 65.99 | 74.29 | [model-226M](https://drive.google.com/file/d/1lcUUxF8mJgZ_e-tZhP1XNQtTBuC-R0zr/view?usp=sharing) |
-| [Part-A^2-Anchor](tools/cfgs/kitti_models/PartA2.yaml)    | ~4.3 hours| 79.40 | 60.05 | 69.90 | [model-244M](https://drive.google.com/file/d/10GK1aCkLqxGNeX3lVu8cLZyE0G8002hY/view?usp=sharing) |
-| [PV-RCNN](tools/cfgs/kitti_models/pv_rcnn.yaml) | ~5 hours| 83.61 | 57.90 | 70.47 | [model-50M](https://drive.google.com/file/d/1lIOq4Hxr0W3qsX83ilQv0nk1Cls6KAr-/view?usp=sharing) |
-
-### NuScenes 3D Object Detection Baselines
-All models are trained with 8 GTX 1080Ti GPUs and are available for download.
-
-|                                             | mATE | mASE | mAOE | mAVE | mAAE | mAP | NDS | download | 
-|---------------------------------------------|----------:|:-------:|:-------:|:-------:|:---------:|:-------:|:-------:|:---------:|
-| [PointPillar-MultiHead](tools/cfgs/nuscenes_models/cbgs_pp_multihead.yaml) | 33.87	| 26.00 | 32.07	| 28.74 | 20.15 | 44.63 | 58.23	 | [model-23M](https://drive.google.com/file/d/1p-501mTWsq0G9RzroTWSXreIMyTUUpBM/view?usp=sharing) | 
-| [SECOND-MultiHead (CBGS)](tools/cfgs/nuscenes_models/cbgs_second_multihead.yaml) | 31.15 |	25.51 |	26.64 | 26.26 | 20.46 | 50.59 | 62.29 | [model-35M](https://drive.google.com/file/d/1bNzcOnE3u9iooBFMk2xK7HqhdeQ_nwTq/view?usp=sharing) |
-
-
-### Other datasets
-More datasets are on the way. 
-
-## Installation
-
-Please refer to [INSTALL.md](docs/INSTALL.md) for the installation of `OpenPCDet`.
-
-
-## Quick Demo
-Please refer to [DEMO.md](docs/DEMO.md) for a quick demo to test with a pretrained model and 
-visualize the predicted results on your custom data or the original KITTI data.
-
-## Getting Started
-
-Please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md) to learn more usage about this project.
-
-
-## License
-
-`OpenPCDet` is released under the [Apache 2.0 license](LICENSE).
-
-## Acknowledgement
-`OpenPCDet` is an open source project for LiDAR-based 3D scene perception that supports multiple
-LiDAR-based perception models as shown above. Some parts of `PCDet` are learned from the official released codes of the above supported methods. 
-We would like to thank for their proposed methods and the official implementation.   
-
-We hope that this repo could serve as a strong and flexible codebase to benefit the research community by speeding up the process of reimplementing previous works and/or developing new methods.
-
-
-## Citation 
-If you find this project useful in your research, please consider cite:
-
-
-```
-@inproceedings{shi2020pv,
-  title={Pv-rcnn: Point-voxel feature set abstraction for 3d object detection},
-  author={Shi, Shaoshuai and Guo, Chaoxu and Jiang, Li and Wang, Zhe and Shi, Jianping and Wang, Xiaogang and Li, Hongsheng},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={10529--10538},
-  year={2020}
-}
-
-
-@article{shi2020points,
-  title={From Points to Parts: 3D Object Detection from Point Cloud with Part-aware and Part-aggregation Network},
-  author={Shi, Shaoshuai and Wang, Zhe and Shi, Jianping and Wang, Xiaogang and Li, Hongsheng},
-  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
-  year={2020},
-  publisher={IEEE}
-}
-
-@inproceedings{shi2019pointrcnn,
-  title={PointRCNN: 3d Object Progposal Generation and Detection from Point Cloud},
-  author={Shi, Shaoshuai and Wang, Xiaogang and Li, Hongsheng},
-  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
-  pages={770--779},
-  year={2019}
-}
+a. Clone this repository.
+```shell
+git clone https://github.com/adept-thu/InterFusion.git
 ```
 
-## Contact
-This project is currently maintained by Shaoshuai Shi ([@sshaoshuai](http://github.com/sshaoshuai)) and Chaoxu Guo ([@Gus-Guo](https://github.com/Gus-Guo)).
->>>>>>> ed6e9a5 (ITSC2021)
+b. Install the dependent libraries as follows:
+
+* Install the dependent python libraries: 
+```
+pip install -r requirements.txt 
+```
+c. Generate dataloader
+```
+python -m pcdet.datasets.astyx.astyx_dataset create_astyx_infos tools/cfgs/dataset_configs/astyx_dataset_radar.yaml
+```
+
+## Training
+```
+CUDA_VISIBLE_DEVICES=1 python train.py --cfg_file cfgs/astyx_models/pointpillar.yaml --tcp_port 25851 --extra_tag yourmodelname
+```
+
+## Testing
+```
+python test.py --cfg_file cfgs/astyx_models/pointpillar.yaml --batch_size 4 --ckpt ##astyx_models/pointpillar/debug/ckpt/checkpoint_epoch_80.pth
+```
+## 核心文件简介
+
+```
+├─data
+│  └─kitti
+│      └─ImageSets
+├─docker
+├─docs
+├─pcdet
+│  ├─datasets
+│  │  ├─astyx
+│  │  ├─augmentor
+│  │  ├─kitti
+│  │  │  └─kitti_object_eval_python
+│  │  ├─nuscenes
+│  │  └─processor
+│  ├─models
+│  │  ├─backbones_2d
+│  │  │  └─map_to_bev
+│  │  ├─backbones_3d
+│  │  │  ├─pfe
+│  │  │  └─vfe
+│  │  ├─dense_heads
+│  │  │  └─target_assigner
+│  │  ├─detectors
+│  │  ├─model_utils
+│  │  └─roi_heads
+│  │      └─target_assigner
+│  ├─ops
+│  │  ├─iou3d_nms
+│  │  │  └─src
+│  │  ├─pointnet2
+│  │  │  ├─pointnet2_batch
+│  │  │  │  └─src
+│  │  │  └─pointnet2_stack
+│  │  │      └─src
+│  │  ├─roiaware_pool3d
+│  │  │  └─src
+│  │  └─roipoint_pool3d
+│  │      └─src
+│  └─utils
+└─tools
+    ├─cfgs
+    │  ├─astyx_models
+    │  ├─dataset_configs
+    │  ├─kitti_models
+    │  └─nuscenes_models
+    ├─eval_utils
+    ├─scripts
+    ├─train_utils
+    │  └─optimization
+    └─visual_utils
+```
+
+
+## 训练测试
+
+### 训练
+
+```shell
+cd tools/
+```
+```
+CUDA_VISIBLE_DEVICES=1 python train.py --cfg_file cfgs/astyx_models/pointpillar.yaml --tcp_port 25851 --extra_tag yourmodelname
+```
+
+### 测试
+
+```shell
+cd tools/
+```
+```
+python test.py --cfg_file cfgs/astyx_models/pointpillar.yaml --batch_size 4 --ckpt ##astyx_models/pointpillar/debug/ckpt/checkpoint_epoch_80.pth
+```
+
+## 可视化
+<p align="center">
+  <img src="docs/vis.png" width="45%">
+</p>
+
+
+## 实验效果
+* All experiments are tested on Astyx Hires2019
+<p align="center">
+  <img src="docs/consult.png" width="45%">
+</p>
+
+
+## 目前成果 
+-- 后续补充
+| Dataset | benchmark | Params(M) | FLOPs(M) |               Download               |      Config      |
+|:-------:|:---------:|:---------:|:--------:|:------------------------------------:|:----------------:|
+|  KITTI  |           |           |          | [model](https:) &#124; [log](https:) | [config](https:) |
+|         |           |           |          | [model](https:) &#124; [log](https:) | [config](https:) |
+
+## 注意事项 
+
+
+##引用
+
+##作者联系方式（qq微信）
